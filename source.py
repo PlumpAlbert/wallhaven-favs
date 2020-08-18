@@ -4,7 +4,8 @@ from os import path
 from collection import WallCollection
 
 parser = ArgumentParser(description='Synchronize your wallpapers from https://wallhaven.cc')
-parser.add_argument('-u', '--user', metavar='user', type=str, help='Username')
+parser.add_argument('-u', '--user', metavar='USERNAME', type=str, help='Username')
+parser.add_argument('-d', '--directory', metavar='DIRECTORY', type=str, help='Root directory for saving wallpapers')
 
 args = parser.parse_args()
 
@@ -14,26 +15,5 @@ if not args['user']:
     raise ValueError("You must provide username")
 
 collections = [WallCollection(args['user'], c['id'], c['label']) for c in get_collections(args['user'])]
-# for c in collections:
-    # dir_path = path.join(
-            # path.expanduser("~/Pictures/"),
-            # c['label']
-    # )
-    # images = get_images_from_collection(args['key'],args['user'],c['id'])
-    # count = 1
-    # for img in images:
-        # print('Updating {} collection [{}/{}]'.format(
-            # c['label'],
-            # count,
-            # len(images)
-        # ), end='\r')
-        # file_path = path.join(
-                # dir_path,
-                # img['id'] + guess_extension(img['file_type'])
-        # )
-        # download_image(img['path'], file_path)
-        # count += 1
-    # print()
-
 for c in collections:
-    c.update()
+    c.update(args['directory'])

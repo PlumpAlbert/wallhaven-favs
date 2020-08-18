@@ -10,6 +10,8 @@ class WallCollection(object):
         self.pics = get_images_from_collection(username, id)
 
     def update(self, root_dir='~/Pictures'):
+        if not root_dir:
+            root_dir = '~/Pictures'
         collection_dir = path.join(path.expanduser(root_dir), self.label)
         progress = ChargingBar(self.label.ljust(20), max=len(self.pics))
         if not path.exists(collection_dir):
