@@ -6,5 +6,5 @@ All of the images will be download to `~/Pictures`
 ## USAGE
 
 ```bash
-python source.py -u[--user] USERNAME -k[--key] API-KEY
+python source.py -u[--user] USERNAME
 ```

@@ -6,18 +6,18 @@ from shutil import copyfileobj
 host = 'https://wallhaven.cc/api/v1'
 
 
-def get_collections(apikey):
-    response = get('{}/collections'.format(host),
-            params={'apikey': apikey})
+def get_collections(username):
+    response = get('{}/collections/{}'.format(host, username),
+            params={'apikey': 'FoN92tRu9mlrpUWwp93y5rh9ehTU6lcV'})
     if response.status_code != 200:
         raise "Sosni hui"
     return response.json()['data']
 
 
-def get_images_from_collection(apikey, username, collection_id):
+def get_images_from_collection(username, collection_id):
     response = get(
             '{}/collections/{}/{}'.format(host,username,collection_id),
-            params={'apikey': apikey}
+            params={'apikey': 'FoN92tRu9mlrpUWwp93y5rh9ehTU6lcV'}
     )
     if response.status_code != 200:
         raise "Idi nahui"
