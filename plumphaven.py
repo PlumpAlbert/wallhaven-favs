@@ -34,6 +34,7 @@ def get_images_from_collection(username, collection_id):
         pics += res['data']
         page += 1
         last_page = res['meta']['last_page']
+    pics.reverse()
     return pics
 
 
