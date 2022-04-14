@@ -98,12 +98,20 @@ def get_images_from_collection(
 
 
 def download_image(url, file_path):
+    """
+    Method for downloading image to the specified path
+
+    :param url str: URL of the image to download
+    :param file_path str: Path to store image
+    """
     dir_path = path.dirname(file_path)
-    if not path.exists(dir_path):
-        mkdir(dir_path)
     if path.exists(file_path):
         return
+    if not path.exists(dir_path):
+        mkdir(dir_path)
     response = get(url, stream=True)
     if response.status_code == 200:
         with open(file_path, 'wb') as f:
             copyfileobj(response.raw, f)
+    else:
+        log.error('! Response is not OK. Response= % s' % response)
