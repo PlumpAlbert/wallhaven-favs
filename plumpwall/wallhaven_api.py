@@ -40,6 +40,8 @@ def get_images_from_collection(
     """
     def get_image_collection(page: int) -> tuple[list[dict[str, Any]] | None,
                                                  int | None]:
+        log.debug("$ Fetching %d page for %d collection of %s" %
+                  (page, collection_id, username))
         response = get(
             '{}/collections/{}/{}'.format(HOST, username, collection_id),
             params={'apikey': 'FoN92tRu9mlrpUWwp93y5rh9ehTU6lcV', 'page': page}
@@ -59,8 +61,14 @@ def get_images_from_collection(
     cache = None
     # Open cached images
     if path.exists(cache_dir):
-        with open(path.join(cache_dir, '%s.json' % collection_id)) as cache_file:
-            cache = json.load(cache_file)
+        log.debug('$ Found cache directory')
+        cache_file_path = path.join(cache_dir, '%s.json' % collection_id)
+        if path.exists(cache_file_path):
+            with open(cache_file_path, 'r') as cache_file:
+                log.debug('$ Found cache directory')
+                cache = json.load(cache_file)
+    else:
+        mkdir(cache_dir)
     while page is not None:
         pics, page = get_image_collection(1)
         if not pics:
@@ -75,8 +83,11 @@ def get_images_from_collection(
                 index = None
             # If we found one -- concatenate it with fresh ones and return to user
             if index is not None:
+                log.debug("$ Concatenate with cache")
                 result = latest_pics + pics[:index] + cache
-                with open(path.join(cache_dir, '%s.json' % collection_id)) as cache_file:
+                cache_file_path = path.join(
+                    cache_dir, '%s.json' % collection_id)
+                with open(cache_file_path, 'w') as cache_file:
                     json.dump(result, cache_file)
                 return result
         latest_pics += pics
