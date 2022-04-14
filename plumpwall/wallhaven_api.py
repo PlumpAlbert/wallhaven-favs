@@ -2,8 +2,9 @@ from typing import Any
 import logging
 import time
 import json
+import pathlib
 from requests import get
-from os import mkdir, path
+from os import path
 from shutil import copyfileobj
 
 log = logging.getLogger(__file__)
@@ -68,9 +69,9 @@ def get_images_from_collection(
                 log.debug('$ Found cache directory')
                 cache = json.load(cache_file)
     else:
-        mkdir(cache_dir)
+        pathlib.Path(cache_dir).mkdir(parents=True, exist_ok=True)
     while page is not None:
-        pics, page = get_image_collection(1)
+        pics, page = get_image_collection(page)
         if not pics:
             log.error("! Couldn't get the latest pictures")
             return None
@@ -92,7 +93,7 @@ def get_images_from_collection(
                 return result
         latest_pics += pics
 
-    with open(path.join(cache_dir, '%s.json' % collection_id)) as cache_file:
+    with open(path.join(cache_dir, '%s.json' % collection_id), 'w') as cache_file:
         json.dump(latest_pics, cache_file)
     return latest_pics
 
@@ -108,7 +109,7 @@ def download_image(url, file_path):
     if path.exists(file_path):
         return
     if not path.exists(dir_path):
-        mkdir(dir_path)
+        pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
     response = get(url, stream=True)
     if response.status_code == 200:
         with open(file_path, 'wb') as f:
