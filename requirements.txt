@@ -4,6 +4,6 @@ charset-normalizer==2.0.10
 idna==3.3
 progress==1.6
 pycodestyle==2.8.0
-requests==2.27.1
+requests==2.32.2
 toml==0.10.2
 urllib3==1.26.7
