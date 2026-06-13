@@ -1,20 +1,21 @@
 from .wallhaven_api import get_images_from_collection, download_image
 import logging
-from os import path, makedirs
+from os import path, makedirs, getenv
 from mimetypes import guess_extension
 from progress.bar import ChargingBar
+from typing import Optional
+
+LOG_LEVEL = getenv('LOG_LEVEL', 'INFO').upper()
 
 log = logging.getLogger(__file__)
+log.setLevel(LOG_LEVEL)
 
 
 class WallCollection(object):
-    def __init__(self, username, id, label):
+    def __init__(self, username, id, label, api_key: Optional[str] = None):
         self.id = id
         self.label = label
-        pics = get_images_from_collection(username, id)
-        if not pics:
-            raise Exception(
-                "Couldn't fetch images from a collection %d" % self.id)
+        pics = get_images_from_collection(username, id, api_key=api_key)
         self.pics = pics
 
     def update(self, root_dir='~/Pictures'):

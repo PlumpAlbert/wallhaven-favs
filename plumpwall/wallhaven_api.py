@@ -1,25 +1,45 @@
-from typing import Any
+from typing import Any, Optional
 import logging
 import time
 import json
 import pathlib
 from requests import get
-from os import path
+from os import path, getenv
 from shutil import copyfileobj
 
+LOG_LEVEL = getenv('LOG_LEVEL', 'INFO').upper()
+
 log = logging.getLogger(__file__)
+log.setLevel(LOG_LEVEL)
 
 HOST = 'https://wallhaven.cc/api/v1'
 
 
-def get_collections(username):
+def _get_api_key(api_key: Optional[str] = None) -> str:
+    """Resolve the API key: explicit arg > WALLHAVEN_API_KEY env var."""
+    key = api_key or getenv('WALLHAVEN_API_KEY')
+    if not key:
+        raise ValueError(
+            "Wallhaven API key is required. "
+            "Set the WALLHAVEN_API_KEY environment variable "
+            "or pass it via --apikey flag."
+        )
+    return key
+
+
+def _get_auth_header(api_key: Optional[str] = None) -> dict[str, str]:
+    """Build the X-Api-Key header from the provided key or env var."""
+    return {'X-Api-Key': _get_api_key(api_key)}
+
+
+def get_collections(username, api_key: Optional[str] = None):
     """
     Method for retrieving user's collections
 
     :param username str: Username
+    :param api_key Optional[str]: API key override
     """
-    response = get('{}/collections/{}'.format(HOST, username),
-                   params={'apikey': 'FoN92tRu9mlrpUWwp93y5rh9ehTU6lcV'})
+    response = get('{}/collections/{}'.format(HOST, username), headers=_get_auth_header(api_key))
     if response.status_code == 429:
         log.info("? Too many requests. Sleeping for 3 seconds...")
         time.sleep(3)
@@ -30,7 +50,8 @@ def get_collections(username):
 def get_images_from_collection(
     username: str,
     collection_id: int,
-    cache_dir: str = path.expanduser('~/.cache/wallhaven/collections')
+    cache_dir: str = path.expanduser('~/.cache/wallhaven/collections'),
+    api_key: Optional[str] = None
 ):
     """
     Method for retrieving images from a collection
@@ -38,6 +59,7 @@ def get_images_from_collection(
     :param username str: Username
     :param collection_id int: Collection identifier
     :param cache_dir str: Cache directory for collections
+    :param api_key Optional[str]: API key override
     """
     def get_image_collection(page: int) -> tuple[list[dict[str, Any]] | None,
                                                  int | None]:
@@ -45,7 +67,8 @@ def get_images_from_collection(
                   (page, collection_id, username))
         response = get(
             '{}/collections/{}/{}'.format(HOST, username, collection_id),
-            params={'apikey': 'FoN92tRu9mlrpUWwp93y5rh9ehTU6lcV', 'page': page}
+            params={'page': page},
+            headers=_get_auth_header(api_key),
         )
         if response.status_code == 429:
             log.info("? Too many requests. Sleeping for 3 seconds...")
@@ -55,6 +78,7 @@ def get_images_from_collection(
             log.error("! Response is not OK. Response = %s" % response)
             return (None, None)
         json_data = response.json()
+        log.debug('response = %s' % json_data)
         return (json_data['data'], None if page == json_data['meta']['last_page'] else page + 1)
 
     latest_pics = []
